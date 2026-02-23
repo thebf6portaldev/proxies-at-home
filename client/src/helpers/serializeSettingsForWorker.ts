@@ -65,7 +65,7 @@ export interface WorkerPdfSettings extends WorkerBleedSettings {
     cutGuideLengthMm: number;
 
     // Silhouette registration marks
-    registrationMarks: 'none' | '3' | '4';
+    registrationMarks: 'none' | '3' | '4' | 'box';
     registrationMarksPortrait: boolean;
 
     // Right-align incomplete rows (for backs export)

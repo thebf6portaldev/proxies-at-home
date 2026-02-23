@@ -2,7 +2,7 @@
  * useRegistrationMarks Hook
  *
  * Renders Silhouette registration marks on the page preview.
- * Supports 3-point (square + 2 L-shapes) and 4-point (4 L-shapes) modes.
+ * Supports 3-point (square + 2 L-shapes), 4-point (4 L-shapes), and box (rectangle border) modes.
  * Portrait mode rotates mark positions for paper loaded in portrait orientation.
  */
 
@@ -22,7 +22,7 @@ interface UseRegistrationMarksProps {
     container: Container | null;
     app: Application | null;
     pages: PageLayoutInfo[];
-    registrationMarks: 'none' | '3' | '4';
+    registrationMarks: 'none' | '3' | '4' | 'box';
     registrationMarksPortrait: boolean;
 }
 
@@ -77,6 +77,36 @@ export function useRegistrationMarks({
         }
 
         if (registrationMarks === 'none') {
+            if (app) app.render();
+            return;
+        }
+
+        // Box mode: draw a rectangle border around each page
+        if (registrationMarks === 'box') {
+            const g = new Graphics();
+            container.addChild(g);
+            graphicsRef.current = g;
+
+            const offsetPx = REG_MARK_OFFSET_MM * CONSTANTS.DISPLAY_MM_TO_PX;
+            const lineWidthPx = REG_MARK_LINE_WIDTH_MM * CONSTANTS.DISPLAY_MM_TO_PX;
+            const half = lineWidthPx / 2;
+
+            pages.forEach((page) => {
+                const pageY = page.pageYOffset;
+                const pageW = page.pageWidthPx;
+                const pageH = page.pageHeightPx;
+
+                // Top bar
+                g.rect(offsetPx - half, pageY + offsetPx - half, pageW - 2 * offsetPx + lineWidthPx, lineWidthPx);
+                // Bottom bar
+                g.rect(offsetPx - half, pageY + pageH - offsetPx - half, pageW - 2 * offsetPx + lineWidthPx, lineWidthPx);
+                // Left bar
+                g.rect(offsetPx - half, pageY + offsetPx - half, lineWidthPx, pageH - 2 * offsetPx + lineWidthPx);
+                // Right bar
+                g.rect(pageW - offsetPx - half, pageY + offsetPx - half, lineWidthPx, pageH - 2 * offsetPx + lineWidthPx);
+            });
+
+            g.fill({ color: 0x000000 });
             if (app) app.render();
             return;
         }

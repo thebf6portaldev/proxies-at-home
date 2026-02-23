@@ -79,7 +79,7 @@ interface PixiVirtualCanvasProps {
     perCardGuidePlacement: 'inside' | 'outside' | 'center';
     cutGuideLengthMm: number; // Length of corner guides in mm
     // Registration marks
-    registrationMarks: 'none' | '3' | '4';
+    registrationMarks: 'none' | '3' | '4' | 'box';
     registrationMarksPortrait: boolean;
     // Theme
     isDarkMode: boolean;

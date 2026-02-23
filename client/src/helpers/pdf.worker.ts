@@ -309,7 +309,7 @@ function drawSilhouetteRegistrationMarks(
     pageWidthPx: number,
     pageHeightPx: number,
     dpi: number,
-    markCount: '3' | '4',
+    markCount: '3' | '4' | 'box',
     portrait: boolean = false
 ): void {
     const offsetPx = MM_TO_PX(REG_MARK_OFFSET_MM, dpi);
@@ -344,6 +344,20 @@ function drawSilhouetteRegistrationMarks(
         ctx.drawImage(lShapeStamp, -stampOffset, -stampOffset);
         ctx.restore();
     };
+
+    // Box mode: draw a rectangle border around the page
+    if (markCount === 'box') {
+        const half = lineWidthPx / 2;
+        // Top bar
+        ctx.fillRect(offsetPx - half, offsetPx - half, pageWidthPx - 2 * offsetPx + lineWidthPx, lineWidthPx);
+        // Bottom bar
+        ctx.fillRect(offsetPx - half, pageHeightPx - offsetPx - half, pageWidthPx - 2 * offsetPx + lineWidthPx, lineWidthPx);
+        // Left bar
+        ctx.fillRect(offsetPx - half, offsetPx - half, lineWidthPx, pageHeightPx - 2 * offsetPx + lineWidthPx);
+        // Right bar
+        ctx.fillRect(pageWidthPx - offsetPx - half, offsetPx - half, lineWidthPx, pageHeightPx - 2 * offsetPx + lineWidthPx);
+        return;
+    }
 
     if (portrait) {
         // Portrait mode: marks rotated for paper loaded in portrait orientation

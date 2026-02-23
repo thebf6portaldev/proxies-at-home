@@ -92,8 +92,8 @@ export type Store = {
   cutGuideLengthMm: number;
   setCutGuideLengthMm: (value: number) => void;
   // Silhouette Cameo registration marks for print & cut
-  registrationMarks: 'none' | '3' | '4';
-  setRegistrationMarks: (value: 'none' | '3' | '4') => void;
+  registrationMarks: 'none' | '3' | '4' | 'box';
+  setRegistrationMarks: (value: 'none' | '3' | '4' | 'box') => void;
   registrationMarksPortrait: boolean;
   setRegistrationMarksPortrait: (value: boolean) => void;
   globalLanguage: string;
@@ -185,7 +185,7 @@ const defaultPageSettings = {
   perCardGuideStyle: "corners" as "corners" | "rounded-corners" | "solid-rounded-rect" | "dashed-rounded-rect" | "solid-squared-rect" | "dashed-squared-rect" | "none",
   guidePlacement: "outside" as "inside" | "outside",
   cutGuideLengthMm: 6.25,
-  registrationMarks: 'none' as 'none' | '3' | '4',
+  registrationMarks: 'none' as 'none' | '3' | '4' | 'box',
   registrationMarksPortrait: false,
   globalLanguage: "en",
 

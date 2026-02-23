@@ -418,7 +418,7 @@ export function GuidesSection() {
                     <Label htmlFor="registrationMarks">Silhouette Registration Marks</Label>
                     <AutoTooltip content="Adds registration marks for Silhouette Cameo print & cut. 3-point uses marks in 3 corners, 4-point adds a mark in the bottom-right for better accuracy on distorted prints." />
                 </div>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-4 gap-2">
                     {/* None option */}
                     <button
                         onClick={() => setRegistrationMarks('none')}
@@ -518,6 +518,29 @@ export function GuidesSection() {
                         </div>
                         <span className={`text-xs font-medium ${registrationMarks === '4' ? 'text-blue-700 dark:text-blue-300' : 'text-gray-600 dark:text-gray-400'}`}>
                             4-Point
+                        </span>
+                    </button>
+
+                    {/* Box option */}
+                    <button
+                        onClick={() => setRegistrationMarks('box')}
+                        className={`p-2 rounded-lg border transition-colors flex flex-col items-center gap-1 ${registrationMarks === 'box'
+                            ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600'
+                            : 'bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
+                            }`}
+                    >
+                        <div className="h-[42px] flex items-center justify-center">
+                            <svg width="32" height="42" viewBox="0 0 40 52" className="flex-shrink-0">
+                                <rect x="4" y="4" width="32" height="44" fill="white" stroke="#ccc" strokeWidth="1" />
+                                <rect x="6" y="6" width="28" height="40" fill="none" stroke="black" strokeWidth="1.5" />
+                                <rect x="10" y="12" width="8" height="11" fill="#e5e7eb" rx="0.5" />
+                                <rect x="22" y="12" width="8" height="11" fill="#e5e7eb" rx="0.5" />
+                                <rect x="10" y="26" width="8" height="11" fill="#e5e7eb" rx="0.5" />
+                                <rect x="22" y="26" width="8" height="11" fill="#e5e7eb" rx="0.5" />
+                            </svg>
+                        </div>
+                        <span className={`text-xs font-medium ${registrationMarks === 'box' ? 'text-blue-700 dark:text-blue-300' : 'text-gray-600 dark:text-gray-400'}`}>
+                            Box
                         </span>
                     </button>
                 </div>

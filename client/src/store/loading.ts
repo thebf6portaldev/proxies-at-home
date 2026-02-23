@@ -4,6 +4,7 @@ type LoadingTask =
   | "Fetching cards"
   | "Processing Images"
   | "Generating PDF"
+  | "Generating Images"
   | "Uploading Images"
   | "Clearing Images"
   | "Exporting ZIP"

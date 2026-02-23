@@ -70,6 +70,7 @@ export function ExportActions({ cards }: Props) {
 
   // Dropdown state
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isPageImagesDropdownOpen, setIsPageImagesDropdownOpen] = useState(false);
   const [isCopyDropdownOpen, setIsCopyDropdownOpen] = useState(false);
   const [isDownloadDropdownOpen, setIsDownloadDropdownOpen] = useState(false);
   const [isImageExportDropdownOpen, setIsImageExportDropdownOpen] = useState(false);
@@ -501,6 +502,157 @@ export function ExportActions({ cards }: Props) {
     }
   };
 
+  const handleExportPageImages = async () => {
+    if (!frontCards.length) return;
+
+    const { exportProxyPagesToImages } = await import(
+      "@/helpers/exportProxyPagesToImages"
+    );
+
+    const allImages = await db.images.toArray();
+    const allCardbacks = await db.cardbacks.toArray();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const imagesById = new Map<string, any>([
+      ...allImages.map((img) => [img.id, img] as const),
+      ...allCardbacks.map((cb) => [cb.id, cb] as const),
+    ]);
+
+    setLoadingTask("Generating Images");
+    setProgress(0);
+
+    let rejectPromise: (reason?: Error) => void;
+    const cancellationPromise = new Promise<void>((_, reject) => {
+      rejectPromise = reject;
+    });
+    setOnCancel(() => rejectPromise(new Error("Cancelled by user")));
+
+    try {
+      const pdfSettings = serializePdfSettingsForWorker();
+      const useCustomBackOffset = useSettingsStore.getState().useCustomBackOffset;
+      const cardBackPositionX = useSettingsStore.getState().cardBackPositionX;
+      const cardBackPositionY = useSettingsStore.getState().cardBackPositionY;
+
+      let cardsToExport: CardOption[] = [];
+      let filenameSuffix = '';
+
+      switch (exportMode) {
+        case 'fronts':
+          cardsToExport = frontCards;
+          filenameSuffix = '_fronts';
+          break;
+
+        case 'interleaved-all':
+          for (const frontCard of frontCards) {
+            cardsToExport.push(frontCard);
+            if (frontCard.linkedBackId) {
+              const backCard = await db.cards.get(frontCard.linkedBackId);
+              if (backCard && backCard.imageId !== 'cardback_builtin_blank') {
+                cardsToExport.push(backCard);
+              }
+            }
+          }
+          filenameSuffix = '_interleaved-all';
+          pdfSettings.perCardBackOffsets = {};
+          break;
+
+        case 'interleaved-custom':
+          for (const frontCard of frontCards) {
+            cardsToExport.push(frontCard);
+            if (frontCard.linkedBackId) {
+              const backCard = await db.cards.get(frontCard.linkedBackId);
+              if (backCard && !backCard.usesDefaultCardback && backCard.imageId !== 'cardback_builtin_blank') {
+                cardsToExport.push(backCard);
+              }
+            }
+          }
+          filenameSuffix = '_interleaved-custom';
+          pdfSettings.perCardBackOffsets = {};
+          break;
+
+        case 'visible_faces':
+          for (const frontCard of frontCards) {
+            const isFlipped = useSelectionStore.getState().flippedCards.has(frontCard.uuid);
+            if (isFlipped && frontCard.linkedBackId) {
+              const backCard = await db.cards.get(frontCard.linkedBackId);
+              cardsToExport.push(backCard ?? frontCard);
+            } else {
+              cardsToExport.push(frontCard);
+            }
+          }
+          filenameSuffix = '_visible_faces';
+          pdfSettings.perCardBackOffsets = {};
+          break;
+
+        case 'duplex': {
+          // Fronts pages first, then backs pages — all in one ZIP
+          const { default: JSZip } = await import('jszip');
+          const sharedZip = new JSZip();
+          const perPage = Math.max(1, pdfSettings.columns * (pdfSettings.rows ?? 1));
+          const numFrontPages = Math.ceil(frontCards.length / perPage);
+          const backCards = await buildBackCardsForExport();
+
+          const frontsResult = await exportProxyPagesToImages({
+            cards: frontCards,
+            imagesById,
+            pdfSettings,
+            onProgress: (p) => setProgress(p * 0.45),
+            cancellationPromise,
+            zip: sharedZip,
+            pageOffset: 0,
+            skipDownload: true,
+          });
+
+          const pdfSettingsForBacks = { ...pdfSettings, rightAlignRows: true };
+          if (useCustomBackOffset) {
+            pdfSettingsForBacks.cardPositionX = cardBackPositionX;
+            pdfSettingsForBacks.cardPositionY = cardBackPositionY;
+          }
+          await exportProxyPagesToImages({
+            cards: backCards,
+            imagesById,
+            pdfSettings: pdfSettingsForBacks,
+            onProgress: (p) => setProgress(45 + p * 0.45),
+            cancellationPromise,
+            zip: frontsResult?.zip ?? sharedZip,
+            pageOffset: numFrontPages,
+            skipDownload: false,
+            filenameSuffix: '_duplex',
+          });
+          setProgress(100);
+          return;
+        }
+
+        case 'backs':
+          cardsToExport = await buildBackCardsForExport();
+          filenameSuffix = '_backs';
+          pdfSettings.rightAlignRows = true;
+          pdfSettings.perCardBackOffsets = {};
+          if (useCustomBackOffset) {
+            pdfSettings.cardPositionX = cardBackPositionX;
+            pdfSettings.cardPositionY = cardBackPositionY;
+          }
+          break;
+      }
+
+      await exportProxyPagesToImages({
+        cards: cardsToExport,
+        imagesById,
+        pdfSettings,
+        onProgress: setProgress,
+        cancellationPromise,
+        filenameSuffix,
+      });
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message === "Cancelled by user") return;
+      console.error("Image export failed:", err);
+      setErrorMessage(err instanceof Error ? err.message : String(err));
+      setShowErrorModal(true);
+    } finally {
+      setLoadingTask(null);
+      setOnCancel(null);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-2">
       {/* Split button for PDF export with mode selector */}
@@ -517,6 +669,22 @@ export function ExportActions({ cards }: Props) {
         value={exportMode}
         onSelect={setExportMode}
         icon={FileText}
+      />
+
+      {/* Split button for page-images export (ZIP of rendered pages) */}
+      <SplitButton
+        label="Export Pages as Images"
+        sublabel={EXPORT_MODES.find(m => m.value === exportMode)?.label}
+        color="teal"
+        disabled={!frontCards.length}
+        onClick={handleExportPageImages}
+        isOpen={isPageImagesDropdownOpen}
+        onToggle={() => setIsPageImagesDropdownOpen(!isPageImagesDropdownOpen)}
+        onClose={() => setIsPageImagesDropdownOpen(false)}
+        options={EXPORT_MODES}
+        value={exportMode}
+        onSelect={setExportMode}
+        icon={Image}
       />
 
       {/* Split button for image export */}

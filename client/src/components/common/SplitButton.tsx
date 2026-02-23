@@ -2,7 +2,7 @@ import { useRef, useCallback, type ReactNode, type ElementType } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useOnClickOutside } from '@/hooks/useOnClickOutside';
 
-type ColorScheme = 'green' | 'cyan' | 'blue' | 'gray' | 'indigo';
+type ColorScheme = 'green' | 'cyan' | 'blue' | 'gray' | 'indigo' | 'teal';
 
 const colorClasses: Record<ColorScheme, { base: string; hover: string; disabled: string; border: string; activeHL: string }> = {
     green: {
@@ -11,6 +11,13 @@ const colorClasses: Record<ColorScheme, { base: string; hover: string; disabled:
         disabled: 'disabled:bg-green-600/50',
         border: 'border-green-500',
         activeHL: 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+    },
+    teal: {
+        base: 'bg-teal-600',
+        hover: 'hover:bg-teal-700',
+        disabled: 'disabled:bg-teal-600/50',
+        border: 'border-teal-500',
+        activeHL: 'bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400',
     },
     cyan: {
         base: 'bg-cyan-600',

@@ -25,6 +25,9 @@ export function GuidesSection() {
     const setRegistrationMarks = useSettingsStore((state) => state.setRegistrationMarks);
     const registrationMarksPortrait = useSettingsStore((state) => state.registrationMarksPortrait);
     const setRegistrationMarksPortrait = useSettingsStore((state) => state.setRegistrationMarksPortrait);
+    const gridAlignment = useSettingsStore((state) => state.gridAlignment);
+
+    const registrationMarksDisabled = gridAlignment === 'top-left';
 
     const bleedEdge = useSettingsStore((state) => state.bleedEdge);
     const bleedEdgeWidth = useSettingsStore((state) => state.bleedEdgeWidth);
@@ -53,6 +56,13 @@ export function GuidesSection() {
             setGuidePlacement('inside');
         }
     }, [canUseOutside, guidePlacement, setGuidePlacement]);
+
+    // Reset registration marks when switching to top-left alignment
+    useEffect(() => {
+        if (gridAlignment === 'top-left' && registrationMarks !== 'none') {
+            setRegistrationMarks('none');
+        }
+    }, [gridAlignment, registrationMarks, setRegistrationMarks]);
 
     const guideWidthInput = useNormalizedInput(
         guideWidth,
@@ -418,6 +428,11 @@ export function GuidesSection() {
                     <Label htmlFor="registrationMarks">Silhouette Registration Marks</Label>
                     <AutoTooltip content="Adds registration marks for Silhouette Cameo print & cut. 3-point uses marks in 3 corners, 4-point adds a mark in the bottom-right for better accuracy on distorted prints." />
                 </div>
+                {registrationMarksDisabled && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mb-2">
+                        Registration marks require <strong>Center</strong> grid alignment.
+                    </p>
+                )}
                 <div className="grid grid-cols-4 gap-2">
                     {/* None option */}
                     <button
@@ -442,7 +457,10 @@ export function GuidesSection() {
                     {/* 3-point option */}
                     <button
                         onClick={() => setRegistrationMarks('3')}
-                        className={`p-2 rounded-lg border transition-colors flex flex-col items-center gap-1 ${registrationMarks === '3'
+                        disabled={registrationMarksDisabled}
+                        className={`p-2 rounded-lg border transition-colors flex flex-col items-center gap-1 ${registrationMarksDisabled
+                            ? 'opacity-40 cursor-not-allowed bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600'
+                            : registrationMarks === '3'
                             ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600'
                             : 'bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
                             }`}
@@ -482,7 +500,10 @@ export function GuidesSection() {
                     {/* 4-point option */}
                     <button
                         onClick={() => setRegistrationMarks('4')}
-                        className={`p-2 rounded-lg border transition-colors flex flex-col items-center gap-1 ${registrationMarks === '4'
+                        disabled={registrationMarksDisabled}
+                        className={`p-2 rounded-lg border transition-colors flex flex-col items-center gap-1 ${registrationMarksDisabled
+                            ? 'opacity-40 cursor-not-allowed bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600'
+                            : registrationMarks === '4'
                             ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600'
                             : 'bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
                             }`}
@@ -524,7 +545,10 @@ export function GuidesSection() {
                     {/* Box option */}
                     <button
                         onClick={() => setRegistrationMarks('box')}
-                        className={`p-2 rounded-lg border transition-colors flex flex-col items-center gap-1 ${registrationMarks === 'box'
+                        disabled={registrationMarksDisabled}
+                        className={`p-2 rounded-lg border transition-colors flex flex-col items-center gap-1 ${registrationMarksDisabled
+                            ? 'opacity-40 cursor-not-allowed bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600'
+                            : registrationMarks === 'box'
                             ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600'
                             : 'bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
                             }`}

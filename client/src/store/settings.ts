@@ -69,6 +69,13 @@ export type Store = {
   setCardPositionX: (mm: number) => void;
   cardPositionY: number;
   setCardPositionY: (mm: number) => void;
+  // Grid alignment
+  gridAlignment: 'center' | 'top-left';
+  setGridAlignment: (value: 'center' | 'top-left') => void;
+  gridMarginXMm: number;
+  setGridMarginXMm: (mm: number) => void;
+  gridMarginYMm: number;
+  setGridMarginYMm: (mm: number) => void;
   // Back card offset settings
   useCustomBackOffset: boolean;
   setUseCustomBackOffset: (value: boolean) => void;
@@ -175,6 +182,9 @@ const defaultPageSettings = {
   cardSpacingMm: 0,
   cardPositionX: 0,
   cardPositionY: 0,
+  gridAlignment: 'center' as 'center' | 'top-left',
+  gridMarginXMm: 5, // ~0.2 inches
+  gridMarginYMm: 4, // ~0.16 inches
   useCustomBackOffset: false,
   cardBackPositionX: 0,
   cardBackPositionY: 0,
@@ -396,6 +406,18 @@ export const useSettingsStore = create<Store>()((set) => ({
     recordSettingChange("cardPositionY", state.cardPositionY);
     return { cardPositionY: mm };
   }),
+  setGridAlignment: (value) => set((state) => {
+    recordSettingChange("gridAlignment", state.gridAlignment);
+    return { gridAlignment: value };
+  }),
+  setGridMarginXMm: (mm) => set((state) => {
+    recordSettingChange("gridMarginXMm", state.gridMarginXMm);
+    return { gridMarginXMm: Math.max(0, mm) };
+  }),
+  setGridMarginYMm: (mm) => set((state) => {
+    recordSettingChange("gridMarginYMm", state.gridMarginYMm);
+    return { gridMarginYMm: Math.max(0, mm) };
+  }),
   setUseCustomBackOffset: (value) => set((state) => {
     recordSettingChange("useCustomBackOffset", state.useCustomBackOffset);
     return { useCustomBackOffset: value };
@@ -598,6 +620,8 @@ export interface LegacySettingsState extends Partial<Store> {
   noBleedMode?: 'generate' | 'none';
   // v10 legacy (settings panel state could be different shape)
   settingsPanelState?: { order?: string[]; collapsed?: Record<string, boolean> };
+  // v11 legacy: gridMarginMm split into x/y
+  gridMarginMm?: number;
 }
 
 // Migration logic extracted from persist middleware
@@ -683,6 +707,17 @@ export function migrateLegacySettings(persistedState: LegacySettingsState, versi
     return {
       ...defaultPageSettings,
       ...(persistedState as Partial<Store>),
+    };
+  }
+
+  if (version < 11) {
+    // v11: Split gridMarginMm into gridMarginXMm and gridMarginYMm
+    const legacyMargin = (persistedState as LegacySettingsState).gridMarginMm;
+    return {
+      ...defaultPageSettings,
+      ...(persistedState as Partial<Store>),
+      gridMarginXMm: legacyMargin ?? 5,
+      gridMarginYMm: legacyMargin ?? 4,
     };
   }
 

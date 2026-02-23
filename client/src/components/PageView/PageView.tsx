@@ -73,6 +73,9 @@ export function PageView({ cards, allCards, images, mobile, active = true }: Pag
   const darkenMode = useSettingsStore((s) => s.darkenMode);
   const cardPositionX = useSettingsStore((s) => s.cardPositionX);
   const cardPositionY = useSettingsStore((s) => s.cardPositionY);
+  const gridAlignment = useSettingsStore((s) => s.gridAlignment);
+  const gridMarginXMm = useSettingsStore((s) => s.gridMarginXMm);
+  const gridMarginYMm = useSettingsStore((s) => s.gridMarginYMm);
   const useCustomBackOffset = useSettingsStore((s) => s.useCustomBackOffset);
   const cardBackPositionX = useSettingsStore((s) => s.cardBackPositionX);
   const cardBackPositionY = useSettingsStore((s) => s.cardBackPositionY);
@@ -623,8 +626,12 @@ export function PageView({ cards, allCards, images, mobile, active = true }: Pag
       const effectiveCardPositionX = useBackOffsets ? cardBackPositionX : cardPositionX;
       const effectiveCardPositionY = useBackOffsets ? cardBackPositionY : cardPositionY;
 
-      const gridStartXMm = (pageWidthMm - gridWidthMm) / 2 + effectiveCardPositionX;
-      const gridStartYMm = (pageHeightMm - gridHeightMm) / 2 + effectiveCardPositionY;
+      const gridStartXMm = gridAlignment === 'top-left'
+        ? gridMarginXMm + effectiveCardPositionX
+        : (pageWidthMm - gridWidthMm) / 2 + effectiveCardPositionX;
+      const gridStartYMm = gridAlignment === 'top-left'
+        ? gridMarginYMm + effectiveCardPositionY
+        : (pageHeightMm - gridHeightMm) / 2 + effectiveCardPositionY;
 
       const layouts = computeCardLayouts(page, sourceSettings, effectiveBleedWidth);
 
@@ -669,7 +676,7 @@ export function PageView({ cards, allCards, images, mobile, active = true }: Pag
     return result;
     // frontCardOverridesKey and backCardOverridesKey are intentional - they detect nested override changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [localCards, pageCapacity, pageWidth, pageHeight, pageSizeUnit, columns, rows, cardSpacingMm, cardPositionX, cardPositionY, useCustomBackOffset, cardBackPositionX, cardBackPositionY, sourceSettings, effectiveBleedWidth, backCardMap, imageDataById, pageHeightPx, fixedCardWidthMm, fixedCardHeightMm, topPaddingPx, frontCardOverridesKey, backCardOverridesKey, flippedCards]);
+  }, [localCards, pageCapacity, pageWidth, pageHeight, pageSizeUnit, columns, rows, cardSpacingMm, cardPositionX, cardPositionY, gridAlignment, gridMarginXMm, gridMarginYMm, useCustomBackOffset, cardBackPositionX, cardBackPositionY, sourceSettings, effectiveBleedWidth, backCardMap, imageDataById, pageHeightPx, fixedCardWidthMm, fixedCardHeightMm, topPaddingPx, frontCardOverridesKey, backCardOverridesKey, flippedCards]);
 
   const perCardGuideColorNum = parseInt(guideColor.replace('#', ''), 16);
 

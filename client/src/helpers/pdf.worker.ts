@@ -493,6 +493,10 @@ self.onmessage = async (event: MessageEvent) => {
             sourceSettings, withBleedSourceAmount,
             // Right-align incomplete rows (for backs export)
             rightAlignRows,
+            // Grid alignment
+            gridAlignment,
+            gridMarginXMm,
+            gridMarginYMm,
             // Pre-rendered effect cache (cardUuid -> Blob)
             effectCacheById,
             perCardBackOffsets
@@ -524,8 +528,14 @@ self.onmessage = async (event: MessageEvent) => {
         // Compute grid dimensions and starting position
         const gridWidthPx = colWidths.reduce((a, b) => a + b, 0) + Math.max(0, columns - 1) * spacingPx;
         const gridHeightPx = rowHeights.reduce((a, b) => a + b, 0) + Math.max(0, rows - 1) * spacingPx;
-        const startX = Math.round((pageWidthPx - gridWidthPx) / 2) + positionOffsetXPx;
-        const startY = Math.round((pageHeightPx - gridHeightPx) / 2) + positionOffsetYPx;
+        const marginXPx = gridAlignment === 'top-left' ? MM_TO_PX(gridMarginXMm ?? 5, DPI) : 0;
+        const marginYPx = gridAlignment === 'top-left' ? MM_TO_PX(gridMarginYMm ?? 4, DPI) : 0;
+        const startX = gridAlignment === 'top-left'
+            ? marginXPx + positionOffsetXPx
+            : Math.round((pageWidthPx - gridWidthPx) / 2) + positionOffsetXPx;
+        const startY = gridAlignment === 'top-left'
+            ? marginYPx + positionOffsetYPx
+            : Math.round((pageHeightPx - gridHeightPx) / 2) + positionOffsetYPx;
 
         // Precompute column X offsets and row Y offsets
         const colOffsets: number[] = [];

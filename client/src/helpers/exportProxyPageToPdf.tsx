@@ -89,6 +89,10 @@ export async function exportProxyPagesToPdf({
     cardBackPositionX,
     cardBackPositionY,
     perCardBackOffsets,
+    // Grid alignment
+    gridAlignment,
+    gridMarginXMm,
+    gridMarginYMm,
   } = pdfSettings;
 
   const perPage = Math.max(1, columns * rows);
@@ -284,6 +288,10 @@ export async function exportProxyPagesToPdf({
                       withBleedSourceAmount,
                       // Right-align incomplete rows for backs export
                       rightAlignRows,
+                      // Grid alignment
+                      gridAlignment,
+                      gridMarginXMm,
+                      gridMarginYMm,
                       // Back-specific positioning
                       useCustomBackOffset,
                       cardBackPositionX,

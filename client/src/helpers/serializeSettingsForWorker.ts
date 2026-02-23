@@ -49,6 +49,10 @@ export interface WorkerPdfSettings extends WorkerBleedSettings {
     cardSpacingMm: number;
     cardPositionX: number;
     cardPositionY: number;
+    // Grid alignment
+    gridAlignment: 'center' | 'top-left';
+    gridMarginXMm: number;
+    gridMarginYMm: number;
 
     // Back-specific positioning
     useCustomBackOffset: boolean;
@@ -128,6 +132,10 @@ export function serializePdfSettingsForWorker(): WorkerPdfSettings {
         cardSpacingMm: state.cardSpacingMm,
         cardPositionX: state.cardPositionX,
         cardPositionY: state.cardPositionY,
+        // Grid alignment
+        gridAlignment: state.gridAlignment,
+        gridMarginXMm: state.gridMarginXMm,
+        gridMarginYMm: state.gridMarginYMm,
         // Back-specific positioning
         useCustomBackOffset: state.useCustomBackOffset,
         cardBackPositionX: state.cardBackPositionX,

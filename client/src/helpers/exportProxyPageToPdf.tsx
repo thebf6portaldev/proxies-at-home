@@ -39,6 +39,7 @@ export async function exportProxyPagesToPdf({
   cancellationPromise,
   filenameSuffix = '',
   returnBuffer = false,
+  projectName,
 }: {
   cards: CardOption[];
   imagesById: Map<string, import("../db").Image>;
@@ -48,6 +49,7 @@ export async function exportProxyPagesToPdf({
   cancellationPromise: Promise<void>;
   filenameSuffix?: string;
   returnBuffer?: boolean;
+  projectName?: string;
 }): Promise<Uint8Array | void> {
   if (!cards || !cards.length) {
     return returnBuffer ? new Uint8Array() : undefined;
@@ -413,7 +415,8 @@ export async function exportProxyPagesToPdf({
   }
 
   const date = new Date().toISOString().slice(0, 10);
-  const filename = `proxxies_${date}${filenameSuffix}.pdf`;
+  const prefix = projectName ? projectName.replace(/[^a-zA-Z0-9_-]/g, '_') : 'proxxies';
+  const filename = `${prefix}_${date}${filenameSuffix}.pdf`;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const blob = new Blob([mergedPdfFile as any], { type: "application/pdf" });

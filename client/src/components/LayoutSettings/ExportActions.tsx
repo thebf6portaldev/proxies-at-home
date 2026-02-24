@@ -6,6 +6,7 @@ import { downloadMpcXml } from "@/helpers/mpcXmlExport";
 import { useLoadingStore } from "@/store/loading";
 import { useSettingsStore } from "@/store/settings";
 import { useSelectionStore } from "@/store/selection";
+import { useProjectStore } from "@/store";
 import { useToastStore } from "@/store/toast";
 import { Button } from "flowbite-react";
 import { db } from "../../db";
@@ -54,6 +55,10 @@ const IMAGE_EXPORT_MODES: { value: ImageExportMode; label: string; description: 
 export function ExportActions({ cards }: Props) {
   const setLoadingTask = useLoadingStore((state) => state.setLoadingTask);
   const setProgress = useLoadingStore((state) => state.setProgress);
+
+  const currentProjectId = useProjectStore((state) => state.currentProjectId);
+  const projects = useProjectStore((state) => state.projects);
+  const currentProjectName = projects.find((p) => p.id === currentProjectId)?.name;
 
   const { filteredAndSortedCards } = useFilteredAndSortedCards(cards);
 
@@ -385,7 +390,8 @@ export function ExportActions({ cards }: Props) {
 
           // Download merged PDF
           const date = new Date().toISOString().slice(0, 10);
-          const filename = `proxxies_${date}_duplex.pdf`;
+          const duplexPrefix = currentProjectName ? currentProjectName.replace(/[^a-zA-Z0-9_-]/g, '_') : 'proxxies';
+          const filename = `${duplexPrefix}_${date}_duplex.pdf`;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const blob = new Blob([mergedPdfFile as any], { type: "application/pdf" });
           const url = URL.createObjectURL(blob);
@@ -423,6 +429,7 @@ export function ExportActions({ cards }: Props) {
         pagesPerPdf: effectivePagesPerPdf,
         cancellationPromise,
         filenameSuffix,
+        projectName: currentProjectName,
       });
 
       // Log PDF export summary
